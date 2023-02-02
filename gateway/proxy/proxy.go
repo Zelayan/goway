@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"github.com/Zelayan/goway/gateway/router"
 	"net/http"
 	"net/http/httputil"
 )
@@ -10,20 +11,19 @@ type GoWayProxy struct {
 
 // Dispatch all request
 func (g *GoWayProxy) Dispatch(writer http.ResponseWriter, request *http.Request) {
-	remoteUrl := "http://localhost:7070/hello/test"
+
+	match, _, err := router.Match(request.URL.Path)
+	if err != nil {
+
+	}
 	proxy := httputil.ReverseProxy{
 		Director: func(req *http.Request) {
 			req.Header.Add("X-Forwarded-Host", req.Host)
-			req.Header.Add("X-Origin-Host", remoteUrl)
-			req.URL.Scheme = "http"
-			req.URL.Host = "localhost:7070"
+			req.Header.Add("X-Origin-Host", match.Host)
+			req.URL.Scheme = match.Scheme
+			req.URL.Host = match.Host
+			req.URL.Path = match.Path
 		},
-		Transport:      nil,
-		FlushInterval:  0,
-		ErrorLog:       nil,
-		BufferPool:     nil,
-		ModifyResponse: nil,
-		ErrorHandler:   nil,
 	}
 	proxy.ServeHTTP(writer, request)
 }

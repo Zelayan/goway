@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"github.com/Zelayan/goway/gateway/router"
+	"go.uber.org/zap"
 	"net/http"
 	"net/http/httputil"
 )
@@ -14,7 +15,7 @@ func (g *GoWayProxy) Dispatch(writer http.ResponseWriter, request *http.Request)
 
 	match, _, err := router.Match(request.URL.Path)
 	if err != nil {
-
+		zap.L().Error("match router failed", zap.Error(err))
 	}
 	proxy := httputil.ReverseProxy{
 		Director: func(req *http.Request) {

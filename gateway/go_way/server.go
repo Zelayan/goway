@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Zelayan/goway/gateway/proxy"
 	"github.com/Zelayan/goway/gateway/router"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -25,5 +26,18 @@ func (s *Server) Start() error {
 }
 
 func NewServer() *Server {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		err = logger.Sync()
+		if err != nil {
+			fmt.Print(err)
+		}
+	}()
+
+	undo := zap.ReplaceGlobals(logger)
+	defer undo()
 	return &Server{}
 }

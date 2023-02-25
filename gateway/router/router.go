@@ -83,5 +83,33 @@ func readRouterConfig() (map[string]*Router, error) {
 			Timeout:     0,
 		},
 	}
+
+	router["server1"] = &Router{
+		Path: "server1",
+		Url:  "http://localhost:8080",
+		Details: &routerDetails{
+			Path: "/server1/**",
+			Url: &url.URL{
+				Scheme: "http",
+				Host:   "localhost:8080",
+			},
+			StripPrefix: false,
+			Timeout:     0,
+		},
+	}
+
+	router["server2"] = &Router{
+		Path: "server2",
+		Url:  "http://localhost:8081",
+		Details: &routerDetails{
+			Path: "/server2/**",
+			Url: &url.URL{
+				Scheme: "http",
+				Host:   "localhost:8081",
+			},
+			StripPrefix: false,
+			Timeout:     0,
+		},
+	}
 	return router, nil
 }

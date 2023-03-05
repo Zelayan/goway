@@ -13,6 +13,9 @@
 4. 支持负载均衡
 5. 支持限流
 
+## 文档地址
+https://www.yuque.com/chenzeze/zero/goway
+
 ## 授权说明
 
 这个项目是根据MIT许可证许可的。有关详细信息，请参阅LICENSE文件。

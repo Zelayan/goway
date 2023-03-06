@@ -9,6 +9,7 @@ import (
 	"github.com/Zelayan/goway/gateway/router"
 	"go.uber.org/zap"
 	"net/http"
+	"time"
 )
 
 type Server struct {
@@ -17,8 +18,9 @@ type Server struct {
 func (s *Server) Start() error {
 	wayProxy := proxy.NewGoWayProxy()
 	err := router.InitRouter()
-	goway_context.Use(limit.MaxAllowed(3))
 	goway_context.Use(log.Logger())
+	goway_context.Use(limit.RateLimit(time.Millisecond, 1))
+
 	if err != nil {
 		return fmt.Errorf("init router failed: %w", err)
 	}

@@ -31,7 +31,7 @@ func (g *GoWayProxy) Filter(ctx *goway_context.GoWayContext) {
 	match, _, err := router.Match(ctx.Request.URL.Path)
 	if err != nil {
 		zap.L().Error("match router failed", zap.Error(err))
-		response.ErrorHandler(ctx, err)
+		ctx.ErrorHandler(http.StatusBadGateway, response.ProxyError, err)
 		return
 	}
 	proxy := httputil.ReverseProxy{

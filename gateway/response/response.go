@@ -2,9 +2,7 @@ package response
 
 import (
 	"encoding/json"
-	gowaycontext "github.com/Zelayan/goway/gateway/context"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 const (
@@ -12,6 +10,7 @@ const (
 	ParseHttpResponseFailed = 1001
 	ProxyUrlNotFound        = 1004
 	ProxyError              = 1502
+	LimitTimeOutError       = 1504
 )
 
 type RestResponse struct {
@@ -38,12 +37,5 @@ var respStatus = map[int]string{
 	ParseHttpResponseFailed: "parse HTTP Response Body failed",
 	ProxyUrlNotFound:        "API Not Found",
 	ProxyError:              "Bad Gateway, Failed to request the background service ",
-}
-
-func ErrorHandler(ctx *gowaycontext.GoWayContext, err error) {
-	if ctx.ResponseWriter != nil {
-		ctx.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
-		ctx.ResponseWriter.WriteHeader(http.StatusBadGateway)
-		ctx.ResponseWriter.Write([]byte(NewError(ProxyUrlNotFound, err.Error()).Error()))
-	}
+	LimitTimeOutError:       "API rate limit, timeout",
 }

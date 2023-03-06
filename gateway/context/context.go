@@ -1,8 +1,12 @@
 package goway_context
 
 import (
+	"github.com/Zelayan/goway/gateway/response"
+	"math"
 	"net/http"
 )
+
+const abortIndex int = math.MaxInt >> 1
 
 type Filter func(c *GoWayContext)
 
@@ -30,14 +34,31 @@ func NewGoWayContext(response http.ResponseWriter, request *http.Request) *GoWay
 	}
 }
 
-func (c *GoWayContext) Next() {
-	c.index++
-	s := len(c.filters)
-	for ; c.index < s; c.index++ {
-		c.filters[c.index](c)
+func (ctx *GoWayContext) Next() {
+	ctx.index++
+	s := len(ctx.filters)
+	for ; ctx.index < s; ctx.index++ {
+		ctx.filters[ctx.index](ctx)
 	}
 }
 
-func (c *GoWayContext) AddFilter(filter func(ctx *GoWayContext)) {
-	c.filters = append(c.filters, filter)
+func (ctx *GoWayContext) Abort() {
+	ctx.index = abortIndex
+}
+
+func (ctx *GoWayContext) AddFilter(filter func(ctx *GoWayContext)) {
+	ctx.filters = append(ctx.filters, filter)
+}
+
+func (ctx *GoWayContext) AbortWithStatus(httpCode int, errorCode int, err error) {
+	ctx.ErrorHandler(httpCode, errorCode, err)
+	ctx.Abort()
+}
+
+func (ctx *GoWayContext) ErrorHandler(httpCode int, errorCode int, err error) {
+	if ctx.ResponseWriter != nil {
+		ctx.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		ctx.ResponseWriter.WriteHeader(httpCode)
+		ctx.ResponseWriter.Write([]byte(response.NewError(errorCode, err.Error()).Error()))
+	}
 }

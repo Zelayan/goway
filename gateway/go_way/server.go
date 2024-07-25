@@ -9,6 +9,7 @@ import (
 	"github.com/Zelayan/goway/gateway/router"
 	"go.uber.org/zap"
 	"net/http"
+	_ "net/http/pprof"
 	"time"
 )
 
@@ -20,7 +21,7 @@ func (s *Server) Start() error {
 	err := router.InitRouter()
 	goway_context.Use(log.Logger())
 	goway_context.Use(limit.RateLimit(time.Millisecond, 1))
-
+	initPprof()
 	if err != nil {
 		return fmt.Errorf("init router failed: %w", err)
 	}
@@ -47,4 +48,10 @@ func NewServer() *Server {
 	undo := zap.ReplaceGlobals(logger)
 	defer undo()
 	return &Server{}
+}
+
+func initPprof() {
+	go func() {
+		http.ListenAndServe("0.0.0.0:8899", nil)
+	}()
 }

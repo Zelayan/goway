@@ -28,6 +28,7 @@ func (g *GoWayProxy) Dispatch(writer http.ResponseWriter, request *http.Request)
 }
 
 func (g *GoWayProxy) Filter(ctx *goway_context.GoWayContext) {
+	// 如果匹配不到路由就直接返回
 	match, _, err := router.Match(ctx.Request.URL.Path)
 	if err != nil {
 		zap.L().Error("match router failed", zap.Error(err))
@@ -43,9 +44,18 @@ func (g *GoWayProxy) Filter(ctx *goway_context.GoWayContext) {
 			req.URL.Path = match.Path
 		},
 	}
+
+	// 如果上游错误，则返回上游错误
+	proxy.ErrorHandler = func(writer http.ResponseWriter, request *http.Request, err error) {
+		writer.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		writer.WriteHeader(http.StatusBadGateway)
+		writer.Write([]byte(response.NewError(response.ProxyError, err.Error()).Error()))
+	}
+
 	proxy.ServeHTTP(ctx.ResponseWriter, ctx.Request)
 }
 
+// globalRecover 如果 panic 的话就用这个来恢复
 func (g *GoWayProxy) globalRecover(ctx *goway_context.GoWayContext, errMsg interface{}) {
 	if ctx.ResponseWriter != nil {
 		ctx.ResponseWriter.Header().Set("Content-Type", "application/json;charset=UTF-8")
